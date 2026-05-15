@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brain Structures and Neurotransmitters Matching Practice</title>
+<style>
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; color:#1f2937; background:#ffffff; line-height:1.45; }
+  .bb-wrap { max-width:1100px; margin:0 auto; padding:16px; }
+  .bb-header { border:1px solid #cbd5e1; background:#f8fafc; border-radius:10px; padding:16px; margin-bottom:14px; }
+  h1 { font-size:1.6rem; margin:0 0 8px; }
+  h2 { font-size:1.1rem; margin:0 0 8px; }
+  p { margin:0 0 10px; }
+  .bb-panel { border:1px solid #cbd5e1; border-radius:10px; padding:14px; margin-bottom:14px; background:#fff; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; }
+  .control-group { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  button, select { font:inherit; border:1px solid #94a3b8; border-radius:8px; padding:8px 10px; background:#fff; color:#111827; }
+  button { cursor:pointer; font-weight:700; }
+  button.primary { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+  button:focus, select:focus, .term:focus, .definition-card:focus { outline:3px solid #93c5fd; outline-offset:2px; }
+  .scoreboard { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
+  .scoreboard span { color:#475569; }
+  .scoreboard strong { color:#111827; }
+  .grid { display:grid; grid-template-columns:minmax(220px, 0.9fr) minmax(260px, 1.4fr); gap:14px; }
+  @media (max-width:800px) { .grid { grid-template-columns:1fr; } }
+  .term-list, .definition-list { display:grid; gap:8px; }
+  .term { width:100%; text-align:left; border:2px solid #cbd5e1; background:#fff; border-radius:10px; padding:10px; font-weight:700; }
+  .term:hover, .definition-card:hover { border-color:#1d4ed8; }
+  .term.selected { border-color:#1d4ed8; background:#eff6ff; }
+  .term.matched { border-color:#86efac; background:#f0fdf4; color:#166534; }
+  .definition-card { display:grid; grid-template-columns:auto 1fr; gap:10px; border:1px solid #cbd5e1; background:#fff; border-radius:10px; padding:10px; cursor:pointer; }
+  .definition-card.matched { background:#f0fdf4; border-color:#86efac; cursor:default; }
+  .definition-card.incorrect { border-color:#fca5a5; background:#fef2f2; }
+  .letter { width:30px; height:30px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; background:#e0e7ff; color:#3730a3; font-weight:800; }
+  .slot { margin-top:8px; min-height:32px; border:2px dashed #cbd5e1; border-radius:8px; padding:6px 8px; color:#64748b; background:#f8fafc; font-weight:700; }
+  .slot.correct { border-style:solid; border-color:#86efac; color:#166534; background:#f0fdf4; }
+  .feedback { min-height:1.4em; margin-top:10px; font-weight:700; }
+  .good { color:#166534; } .bad { color:#991b1b; } .warn { color:#92400e; }
+  .small { color:#475569; font-size:.95rem; }
+  .hidden { display:none; }
+  ol { padding-left:1.35rem; } li { margin-bottom:6px; }
+</style>
+</head>
+<body>
+<div class="bb-wrap" id="brainMatchApp">
+  <div class="bb-header">
+    <h1>Brain Structures and Neurotransmitters Matching Practice</h1>
+    <p>Choose a term, then choose the matching definition. Correct answers lock in place.</p>
+    <p class="small"><strong>Blackboard note:</strong> This is a practice activity. It does not send grades to the Blackboard Gradebook.</p>
+  </div>
+  <div class="bb-panel">
+    <div class="controls">
+      <div class="control-group">
+        <label for="setSize"><strong>Number of items:</strong></label>
+        <select id="setSize" aria-label="Number of items">
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="20">20</option>
+          <option value="39">All</option>
+        </select>
+        <button type="button" class="primary" id="newGameBtn">New Game</button>
+        <button type="button" id="resetBtn">Reset Current Set</button>
+      </div>
+      <div class="control-group"><button type="button" id="showAnswersBtn">Show/Hide Answer Key</button></div>
+    </div>
+    <div class="scoreboard" aria-live="polite">
+      <span>Score: <strong id="score">0</strong></span>
+      <span>Matched: <strong id="matched">0</strong>/<strong id="total">0</strong></span>
+      <span>Attempts: <strong id="attempts">0</strong></span>
+    </div>
+    <div id="feedback" class="feedback" aria-live="polite"></div>
+  </div>
+  <div class="grid">
+    <div class="bb-panel"><h2>Terms</h2><p class="small">Click one term first.</p><div id="termList" class="term-list"></div></div>
+    <div class="bb-panel"><h2>Definitions</h2><p class="small">Then click its matching definition.</p><div id="definitionList" class="definition-list"></div></div>
+  </div>
+  <div class="bb-panel hidden" id="answerKeyPanel"><h2>Answer Key</h2><ol id="answerKey"></ol></div>
+</div>
+<script>
+(function() {
+  'use strict';
+  var allItems = [{"term": "Acetylcholine", "definition": "A neurotransmitter involved in muscle movement, attention, learning, memory, and arousal."}, {"term": "Norepinephrine", "definition": "A neurotransmitter linked to alertness, arousal, attention, and the fight-or-flight response."}, {"term": "Serotonin", "definition": "A neurotransmitter involved in mood, sleep, appetite, and emotional regulation."}, {"term": "Dopamine", "definition": "A neurotransmitter involved in reward, motivation, movement, and reinforcement learning."}, {"term": "GABA", "definition": "The main inhibitory neurotransmitter in the brain; it reduces neural activity."}, {"term": "Glutamate", "definition": "The main excitatory neurotransmitter in the brain; important for learning and memory."}, {"term": "Endorphins", "definition": "Peptide neurotransmitters that reduce pain and can produce feelings of pleasure."}, {"term": "Nitric oxide", "definition": "A gaseous neurotransmitter that diffuses across cell membranes and helps with signaling between neurons."}, {"term": "Somatic nervous system", "definition": "The PNS division that controls voluntary movement of skeletal muscles."}, {"term": "Autonomic nervous system", "definition": "The PNS division that regulates involuntary functions such as heart rate, digestion, and breathing."}, {"term": "Sympathetic nervous system", "definition": "The autonomic division that prepares the body for action, stress, or emergency."}, {"term": "Parasympathetic nervous system", "definition": "The autonomic division that calms the body and supports rest, digestion, and recovery."}, {"term": "Spinal cord", "definition": "A CNS structure that carries messages between the brain and body and coordinates reflexes."}, {"term": "Afferent neurons", "definition": "Sensory neurons that carry information toward the central nervous system."}, {"term": "Efferent neurons", "definition": "Motor neurons that carry commands away from the central nervous system to muscles and glands."}, {"term": "Medulla", "definition": "A hindbrain structure that controls vital functions such as breathing, heart rate, and blood pressure."}, {"term": "Reticular formation", "definition": "A network involved in arousal, attention, sleep-wake regulation, and filtering incoming information."}, {"term": "Locus coeruleus", "definition": "A brainstem area that produces norepinephrine and is involved in arousal, attention, and stress responses."}, {"term": "Cerebellum", "definition": "A hindbrain structure important for coordination, balance, posture, timing, and motor learning."}, {"term": "Substantia nigra", "definition": "A midbrain structure that produces dopamine and helps control movement."}, {"term": "Striatum", "definition": "A forebrain structure involved in movement, habits, reward, and action selection."}, {"term": "Thalamus", "definition": "A relay station that sends most sensory information to the appropriate areas of the cerebral cortex."}, {"term": "Hypothalamus", "definition": "A forebrain structure that regulates hunger, thirst, temperature, hormones, and homeostasis."}, {"term": "Suprachiasmatic nuclei", "definition": "Hypothalamic nuclei that act as the body's biological clock and regulate circadian rhythms."}, {"term": "Amygdala", "definition": "A limbic structure important for emotion, fear, threat detection, and emotional learning."}, {"term": "Hippocampus", "definition": "A limbic structure important for forming new long-term memories and spatial navigation."}, {"term": "Limbic system", "definition": "A group of structures involved in emotion, motivation, memory, and drives."}, {"term": "Cerebral cortex", "definition": "The brain's outer layer, involved in perception, thought, language, voluntary movement, and higher mental processes."}, {"term": "Frontal lobe", "definition": "A cortical lobe involved in planning, decision making, personality, impulse control, and voluntary movement."}, {"term": "Parietal lobe", "definition": "A cortical lobe involved in touch, body position, spatial processing, and sensory integration."}, {"term": "Occipital lobe", "definition": "A cortical lobe primarily involved in visual processing."}, {"term": "Temporal lobe", "definition": "A cortical lobe involved in hearing, language comprehension, memory, and object recognition."}, {"term": "Somatosensory cortex", "definition": "A functional cortical area that processes touch, pressure, pain, temperature, and body position."}, {"term": "Motor cortex", "definition": "A functional cortical area that sends commands for voluntary movement."}, {"term": "Visual cortex", "definition": "A functional cortical area in the occipital lobe that processes visual information."}, {"term": "Association cortex", "definition": "Cortical areas that integrate information and support complex thinking, language, memory, and problem solving."}, {"term": "Broca's area", "definition": "A language area important for speech production and grammatical expression."}, {"term": "Wernicke's area", "definition": "A language area important for understanding spoken and written language."}, {"term": "Corpus callosum", "definition": "A large bundle of axons that connects the left and right cerebral hemispheres."}];
+  var currentItems = [];
+  var selectedTermId = null;
+  var matchedCount = 0;
+  var attempts = 0;
+  var score = 0;
+  var termList = document.getElementById('termList');
+  var definitionList = document.getElementById('definitionList');
+  var feedback = document.getElementById('feedback');
+  var scoreEl = document.getElementById('score');
+  var matchedEl = document.getElementById('matched');
+  var totalEl = document.getElementById('total');
+  var attemptsEl = document.getElementById('attempts');
+  var setSize = document.getElementById('setSize');
+  var answerKeyPanel = document.getElementById('answerKeyPanel');
+  var answerKey = document.getElementById('answerKey');
+  function shuffle(array) {
+    var copy = array.slice();
+    for (var i = copy.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = copy[i]; copy[i] = copy[j]; copy[j] = temp;
+    }
+    return copy;
+  }
+  function setFeedback(text, kind) { feedback.textContent = text; feedback.className = 'feedback ' + (kind || ''); }
+  function updateStats() { scoreEl.textContent = score; matchedEl.textContent = matchedCount; totalEl.textContent = currentItems.length; attemptsEl.textContent = attempts; }
+  function resetState() { selectedTermId = null; matchedCount = 0; attempts = 0; score = 0; for (var i=0;i<currentItems.length;i++) currentItems[i].matched=false; setFeedback('', ''); answerKeyPanel.className='bb-panel hidden'; updateStats(); }
+  function makeSet() {
+    var count = parseInt(setSize.value, 10);
+    currentItems = shuffle(allItems).slice(0, count).map(function(item, index) { return { term:item.term, definition:item.definition, id:'item-' + index, matched:false }; });
+    resetState(); render();
+  }
+  function render() { renderTerms(); renderDefinitions(); renderAnswerKey(); updateStats(); }
+  function renderTerms() {
+    termList.innerHTML = '';
+    var terms = shuffle(currentItems);
+    for (var i=0;i<terms.length;i++) {
+      var item = terms[i];
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'term'; btn.textContent = item.term; btn.setAttribute('data-id', item.id);
+      if (item.matched) { btn.className += ' matched'; btn.disabled = true; }
+      if (selectedTermId === item.id) btn.className += ' selected';
+      btn.onclick = function() { selectTerm(this.getAttribute('data-id')); };
+      termList.appendChild(btn);
+    }
+  }
+  function renderDefinitions() {
+    definitionList.innerHTML = '';
+    var defs = shuffle(currentItems);
+    for (var i=0;i<defs.length;i++) {
+      var item = defs[i];
+      var card = document.createElement('div'); card.className = 'definition-card'; card.setAttribute('data-id', item.id); card.setAttribute('tabindex', item.matched ? '-1' : '0'); card.setAttribute('role','button');
+      if (item.matched) card.className += ' matched';
+      var letter = document.createElement('div'); letter.className='letter'; letter.textContent=String.fromCharCode(65+i);
+      var body = document.createElement('div');
+      var text = document.createElement('div'); text.textContent = item.definition;
+      var slot = document.createElement('div'); slot.className = 'slot'; slot.textContent = item.matched ? item.term : 'Click to match selected term'; if (item.matched) slot.className += ' correct';
+      body.appendChild(text); body.appendChild(slot); card.appendChild(letter); card.appendChild(body);
+      if (!item.matched) {
+        card.onclick = function() { tryMatch(this.getAttribute('data-id'), this); };
+        card.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tryMatch(this.getAttribute('data-id'), this); } };
+      }
+      definitionList.appendChild(card);
+    }
+  }
+  function renderAnswerKey() {
+    answerKey.innerHTML='';
+    var sorted = currentItems.slice().sort(function(a,b) { return a.term.localeCompare(b.term); });
+    for (var i=0;i<sorted.length;i++) { var li=document.createElement('li'); li.innerHTML='<strong>'+escapeHtml(sorted[i].term)+'</strong>: '+escapeHtml(sorted[i].definition); answerKey.appendChild(li); }
+  }
+  function escapeHtml(str) { return String(str).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function selectTerm(id) {
+    var item = currentItems.filter(function(x){return x.id===id;})[0];
+    if (!item || item.matched) return;
+    selectedTermId = id; setFeedback('Selected: ' + item.term, 'warn'); renderTerms();
+  }
+  function tryMatch(definitionId, card) {
+    if (!selectedTermId) { setFeedback('Choose a term first.', 'warn'); return; }
+    attempts++;
+    var selected = currentItems.filter(function(x){return x.id===selectedTermId;})[0];
+    var target = currentItems.filter(function(x){return x.id===definitionId;})[0];
+    if (selectedTermId === definitionId) {
+      target.matched = true; matchedCount++; score += 10; selectedTermId = null; setFeedback('Correct: ' + selected.term, 'good'); render();
+      if (matchedCount === currentItems.length) setFeedback('Finished! Final score: ' + score + ' points in ' + attempts + ' attempts.', 'good');
+    } else {
+      score = Math.max(0, score - 2); setFeedback('Not quite. Try another definition for ' + selected.term + '.', 'bad');
+      if (card) { card.className += ' incorrect'; setTimeout(function() { card.className = card.className.replace(' incorrect',''); }, 300); }
+      updateStats();
+    }
+  }
+  document.getElementById('newGameBtn').onclick = makeSet;
+  document.getElementById('resetBtn').onclick = function() { resetState(); render(); };
+  document.getElementById('showAnswersBtn').onclick = function() { answerKeyPanel.className = answerKeyPanel.className.indexOf('hidden') >= 0 ? 'bb-panel' : 'bb-panel hidden'; };
+  makeSet();
+}());
+</script>
+</body>
+</html>
