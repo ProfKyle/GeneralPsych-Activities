@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reinforcement & Punishment Interactive Practice</title>
+<style>
+:root{--bg:#f5f2eb;--card:#fffdf8;--ink:#28302b;--muted:#6f766f;--accent:#6f8a68;--accent2:#b7c7a8;--wrong:#b94b4b;--right:#3e7d54;--gold:#d8a94e;--shadow:0 10px 28px rgba(48,54,42,.14)}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#f5f2eb,#e9efe3);color:var(--ink)}
+header{padding:34px 20px 22px;text-align:center;background:linear-gradient(135deg,#6f8a68,#9aa985);color:white;box-shadow:var(--shadow)}
+header h1{margin:0;font-size:clamp(1.8rem,4vw,3.1rem);letter-spacing:.3px} header p{max-width:850px;margin:12px auto 0;font-size:1.05rem;opacity:.96}.wrap{max-width:1120px;margin:0 auto;padding:22px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.panel,.card{background:var(--card);border:1px solid rgba(60,70,55,.12);border-radius:24px;box-shadow:var(--shadow)}.panel{padding:18px;margin-bottom:18px}.legend{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.term{padding:14px;border-radius:18px;background:#f1f5ed;border:1px solid #dfe8d8}.term b{display:block;margin-bottom:5px}.term small{color:var(--muted);line-height:1.35}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}.btn{border:0;border-radius:999px;background:var(--accent);color:white;padding:11px 16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(72,92,68,.22)}.btn.secondary{background:#e5eadf;color:#33402f}.btn.warn{background:#896c4d}.btn:disabled{opacity:.55;cursor:not-allowed}.scorebar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.pill{border-radius:999px;background:#eef2ea;padding:9px 13px;font-weight:700;color:#3d473b}.progress{height:12px;background:#dfe7d8;border-radius:999px;overflow:hidden;flex:1;min-width:180px}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:.25s}.question{padding:22px}.qtop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.qnum{font-weight:800;color:var(--accent)}.scenario{font-size:1.25rem;line-height:1.45;margin:18px 0}.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.choice{padding:14px;border-radius:18px;border:2px solid #dfe7d8;background:#fbfcf8;text-align:left;font-weight:750;cursor:pointer;color:var(--ink)}.choice:hover{border-color:var(--accent2);background:#f4f7ef}.choice.correct{border-color:var(--right);background:#e7f2e9}.choice.incorrect{border-color:var(--wrong);background:#f8e8e8}.feedback{margin-top:16px;padding:14px;border-radius:18px;background:#f3f5ef;display:none;line-height:1.45}.feedback.show{display:block}.feedback.right{border-left:6px solid var(--right)}.feedback.wrong{border-left:6px solid var(--wrong)}.modebar{display:flex;gap:8px;flex-wrap:wrap}.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px}.jump{border:1px solid #dbe4d4;background:white;border-radius:12px;padding:10px;cursor:pointer;font-weight:700}.jump.done{background:#e7f2e9;border-color:#b7d3bd}.jump.current{outline:3px solid var(--gold)}.hidden{display:none!important} footer{text-align:center;color:var(--muted);font-size:.9rem;padding:24px}.review-item{padding:12px;border-bottom:1px solid #edf0ea}.review-item:last-child{border-bottom:0}.tag{font-size:.8rem;border-radius:99px;padding:4px 8px;background:#eef2ea;color:#4f5d49;font-weight:800} @media(max-width:800px){.legend,.choices{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.controls{align-items:stretch}.btn{width:100%}}
+</style>
+</head>
+<body>
+<header>
+<h1>Reinforcement & Punishment Practice</h1>
+<p>Choose whether each scenario is positive reinforcement, negative reinforcement, positive punishment, or negative punishment. Use the quick rule: positive means something is added; negative means something is removed. Reinforcement increases behavior; punishment decreases behavior.</p>
+</header>
+<main class="wrap">
+<section class="panel">
+<div class="legend">
+<div class="term"><b>Positive Reinforcement</b><small>Add something desirable to increase behavior.</small></div>
+<div class="term"><b>Negative Reinforcement</b><small>Remove or avoid something unpleasant to increase behavior.</small></div>
+<div class="term"><b>Positive Punishment</b><small>Add something unpleasant to decrease behavior.</small></div>
+<div class="term"><b>Negative Punishment</b><small>Remove something desirable to decrease behavior.</small></div>
+</div>
+</section>
+<section class="panel controls">
+<div class="scorebar"><span class="pill" id="score">Score: 0/0</span><span class="pill" id="streak">Streak: 0</span><div class="progress"><span id="prog"></span></div></div>
+<div class="modebar"><button class="btn secondary" id="shuffleBtn">Shuffle</button><button class="btn secondary" id="showAllBtn">Question Map</button><button class="btn warn" id="resetBtn">Reset</button></div>
+</section>
+<section class="card question" id="quiz">
+<div class="qtop"><div class="qnum" id="qnum"></div><span class="tag" id="statusTag">Unanswered</span></div>
+<div class="scenario" id="scenario"></div>
+<div class="choices" id="choices"></div>
+<div class="feedback" id="feedback"></div>
+<div class="controls" style="margin-top:18px"><button class="btn secondary" id="prevBtn">Previous</button><button class="btn" id="nextBtn">Next</button></div>
+</section>
+<section class="panel hidden" id="mapPanel"><h2>Question Map</h2><div class="list" id="qmap"></div></section>
+<section class="panel" id="review"><h2>Review Missed Items</h2><div id="missed">Missed items will appear here after you answer.</div></section>
+</main>
+<footer>Instructor note: some original answer-key entries appear inconsistent; this version uses common operant-conditioning definitions.</footer>
+<script>
+const labels=["Positive Reinforcement","Negative Reinforcement","Positive Punishment","Negative Punishment"];
+const items = [
+["I run into a pole while texting.","Positive Punishment","The unpleasant consequence is added after texting while walking, making that behavior less likely."],
+["Wearing sunglasses to avoid or remove the glare of the sun.","Negative Reinforcement","The glare is removed or avoided, which reinforces wearing sunglasses."],
+["You receive a sticker for wearing your ID to class.","Positive Reinforcement","A sticker is added to increase wearing the ID."],
+["You receive an award for writing short stories.","Positive Reinforcement","An award is added to increase the writing behavior."],
+["An A on your well-written paper.","Positive Reinforcement","A good grade is added after strong work, increasing the behavior."],
+["Removing video game play time.","Negative Punishment","A desired activity is removed to reduce behavior."],
+["Jail removes freedom to do as you please.","Negative Punishment","Freedom is removed to reduce illegal behavior."],
+["Making a goal in basketball after using correct form.","Positive Reinforcement","Success is added after correct form, increasing that form."],
+["If I yell, ‘You’re the king of the world!’ my brother will let me up off the floor.","Negative Reinforcement","The pressure/restraint is removed after yelling the phrase."],
+["Tasting bitter nail chemical when you try to bite your nails.","Positive Punishment","A bitter taste is added to reduce nail biting."],
+["Snapping your wrist with a rubber band when you bite your fingernails.","Positive Punishment","Pain is added to reduce nail biting."],
+["Wearing a helmet and pads to avoid a sports or recreational injury.","Negative Reinforcement","Possible injury is avoided, reinforcing protective gear use."],
+["You come in late after curfew and your parents take away your car keys.","Negative Punishment","Car access is removed to reduce coming home late."],
+["Removing a door from bedroom hinges after a child slams it in anger, removing privacy.","Negative Punishment","Privacy is removed to reduce door slamming."],
+["Following the laws to avoid jail.","Negative Reinforcement","Jail is avoided, reinforcing law-following."],
+["Enjoying giving a party where everyone seems to be having a great time.","Positive Reinforcement","Good feelings/social approval are added, increasing party-giving."],
+["Eating a meal you don’t like in order to avoid hurting the cook’s feelings.","Negative Reinforcement","An unpleasant social outcome is avoided."],
+["Feeling good after working at a soup kitchen.","Positive Reinforcement","Good feelings are added after volunteering."],
+["Getting a super wedgie for mouthing off to your older brother.","Positive Punishment","An unpleasant consequence is added to reduce mouthing off."],
+["A parent places a child in time-out when they misbehave, and the parent is more likely to use time-out in the future.","Negative Reinforcement","For the parent, the child’s misbehavior stops, removing an unpleasant situation."],
+["You smile at another person, who then increases smiling or talking.","Positive Reinforcement","The smile is an added social reward that increases interaction."],
+["A student's cell phone rings in class. The teacher answers it and talks to the caller, embarrassing the student.","Positive Punishment","Embarrassment is added to reduce phone interruptions."],
+["You put on your seatbelt to stop the annoying dinging noise in your car.","Negative Reinforcement","The annoying sound is removed, reinforcing seatbelt use."],
+["Tim texts in class, gets caught, and receives a 4-hour Saturday detention.","Positive Punishment","Detention is added to reduce texting in class."],
+["Putting gas in your car so you can move about town.","Positive Reinforcement","Mobility/access is gained after putting in gas."],
+["Taking out the garbage to quiet a nagging significant other.","Negative Reinforcement","Nagging stops, reinforcing taking out garbage."],
+["You receive a kiss for bringing your girlfriend flowers.","Positive Reinforcement","A pleasant consequence is added after bringing flowers."],
+["The repo man takes a car for failure to make loan payments.","Negative Punishment","The car is removed to reduce nonpayment."],
+["Someone frowns when you tell a joke.","Positive Punishment","A negative social reaction is added, reducing joke-telling."],
+["You receive a merit raise at work for doing your job well.","Positive Reinforcement","Money is added to increase good work."],
+["Being nice to your brother to avoid super wedgies.","Negative Reinforcement","Wedgies are avoided, reinforcing being nice."],
+["Smoking a cigarette makes the craving for nicotine go away.","Negative Reinforcement","The craving is removed, reinforcing smoking."],
+["You get your allowance only after you complete your weekly chores.","Positive Reinforcement","Allowance is added after chores."],
+["You walk out of a terrible movie after 10 minutes.","Negative Reinforcement","The unpleasant movie experience is removed."],
+["I get a cookie after I finish my reading assignment.","Positive Reinforcement","A cookie is added after reading."],
+["Telling my friends how to play a game, and they tell me to mind my own business.","Positive Punishment","A negative social response is added to reduce bossy behavior."],
+["An employee's inappropriate behavior at work stops after being criticized by a supervisor.","Positive Punishment","Criticism is added and the behavior decreases."],
+["Hurting your head when you don’t duck in a low doorway.","Positive Punishment","Pain is added after failing to duck."],
+["Removing a super wedgie to eliminate discomfort.","Negative Reinforcement","Discomfort is removed."],
+["Losing your driver's license after getting a DUI.","Negative Punishment","A valued privilege is removed."],
+["Taking a white pill makes a headache go away, making you more likely to take it next time.","Negative Reinforcement","Pain is removed, reinforcing pill taking."],
+["Breaking the law to go to jail for free meals, healthcare, and a roof over your head.","Positive Reinforcement","Desired resources are gained."],
+["Smoking a cigarette brings a dopamine release and a good feeling.","Positive Reinforcement","A pleasurable feeling is added."],
+["Ducking your head to avoid hitting it on a low doorway.","Negative Reinforcement","Pain is avoided."],
+["Receiving a ticket for speeding in your car.","Positive Punishment","A fine/ticket is added to reduce speeding."],
+["A teenager loses their cellphone for talking back to mom.","Negative Punishment","The phone is removed to reduce talking back."],
+["You put up an umbrella to avoid getting wet in the rain.","Negative Reinforcement","Getting wet is avoided."],
+["Refusing to be affectionate toward your partner when they forget your anniversary.","Negative Punishment","Affection is removed to reduce forgetting."],
+["Jail means being forced to live in a small smelly room.","Positive Punishment","An unpleasant living condition is added."],
+["You get sick from drinking too much vodka, so you moderate your drinking in the future.","Positive Punishment","Sickness is added and drinking decreases."],
+["A teacher takes a student's cell phone away in class.","Negative Punishment","The phone is removed to reduce phone use."],
+["You clean up your room so your mom will stop nagging you about it.","Negative Reinforcement","Nagging is removed."],
+["Getting pleasure from a stimulating conversation with a great colleague.","Positive Reinforcement","Pleasure is added after conversation."],
+["I got grounded because I came home past curfew.","Negative Punishment","Freedom/privileges are removed."],
+["A service dog is allowed to play tug as a reward for finding a hidden item.","Positive Reinforcement","Play is added to increase correct identification."],
+["Putting gas in your car to avoid a breakdown.","Negative Reinforcement","A breakdown is avoided."],
+["An employee is late for work and loses the right to listen to music while working.","Negative Punishment","Music privilege is removed."],
+["You tell Jack Bauer everything he wants to know to get him to stop torturing you.","Negative Reinforcement","Torture stops, reinforcing telling him."],
+["Studying for an exam reduces stress.","Negative Reinforcement","Stress is reduced."],
+["You receive a detention for being tardy to class.","Positive Punishment","Detention is added to reduce tardiness."],
+["A dog jumps on you when you return home. You turn your back and ignore him.","Negative Punishment","Attention is removed to reduce jumping."],
+["Your sister whacks you upside the head for getting in her personal space.","Positive Punishment","Pain is added to reduce invading space."],
+["You turn on the radio to drown out traffic noise after opening a window.","Negative Reinforcement","The unpleasant traffic noise is reduced/covered."],
+["Zachary is naughty, so his mom says he cannot go camping with his best friend.","Negative Punishment","The camping trip is removed."],
+["The teacher yells ‘stop talking!’ and other students glare at the offenders.","Positive Punishment","Yelling and glares are added to reduce talking."],
+["Giving your child dessert when they eat their vegetables.","Positive Reinforcement","Dessert is added after eating vegetables."],
+["Eating an entire batch of chocolate cookies and feeling sick to your stomach.","Positive Punishment","Sickness is added and should reduce overeating."],
+["Mouthing off to receive a super wedgie because you think super wedgies are fun.","Positive Reinforcement","A desired consequence is added, increasing mouthing off."],
+["Stretching to avoid a sports injury.","Negative Reinforcement","Injury is avoided."],
+["Flushing the toilet right after hurling chunks.","Negative Reinforcement","An unpleasant sight/smell is removed."]
+].map((x,i)=>({id:i+1,scenario:x[0],answer:x[1],why:x[2]}));
+let order=[...items.keys()], idx=0, answered={}, streak=0;
+const qnum=document.getElementById('qnum'), scenario=document.getElementById('scenario'), choices=document.getElementById('choices'), feedback=document.getElementById('feedback'), score=document.getElementById('score'), prog=document.getElementById('prog'), streakEl=document.getElementById('streak'), statusTag=document.getElementById('statusTag');
+function render(){const item=items[order[idx]]; qnum.textContent=`Question ${idx+1} of ${order.length} · Original #${item.id}`; scenario.textContent=item.scenario; choices.innerHTML=''; feedback.className='feedback'; feedback.innerHTML=''; statusTag.textContent=answered[item.id]?'Answered':'Unanswered'; labels.forEach(l=>{const b=document.createElement('button'); b.className='choice'; b.textContent=l; if(answered[item.id]){b.disabled=true; if(l===item.answer)b.classList.add('correct'); if(l===answered[item.id].choice&&l!==item.answer)b.classList.add('incorrect');} b.onclick=()=>check(l,item); choices.appendChild(b);}); if(answered[item.id])showFeedback(item, answered[item.id].choice===item.answer); update(); renderMap();}
+function check(choice,item){const correct=choice===item.answer; if(!answered[item.id]){answered[item.id]={choice,correct}; streak=correct?streak+1:0;} showFeedback(item,correct); render();}
+function showFeedback(item,correct){feedback.className='feedback show '+(correct?'right':'wrong'); feedback.innerHTML=`<b>${correct?'Correct!':'Not quite.'}</b><br>Answer: <b>${item.answer}</b><br>${item.why}`;}
+function update(){const vals=Object.values(answered); const right=vals.filter(v=>v.correct).length; score.textContent=`Score: ${right}/${vals.length}`; streakEl.textContent=`Streak: ${streak}`; prog.style.width=(vals.length/items.length*100)+'%'; document.getElementById('prevBtn').disabled=idx===0; document.getElementById('nextBtn').textContent=idx===order.length-1?'Finish':'Next'; const missed=items.filter(it=>answered[it.id]&&!answered[it.id].correct); document.getElementById('missed').innerHTML=missed.length?missed.map(it=>`<div class="review-item"><b>#${it.id}: ${it.answer}</b><br>${it.scenario}<br><small>${it.why}</small></div>`).join(''):'Missed items will appear here after you answer.';}
+function renderMap(){const qmap=document.getElementById('qmap'); qmap.innerHTML=''; order.forEach((oi,i)=>{const it=items[oi], b=document.createElement('button'); b.textContent=i+1; b.className='jump '+(answered[it.id]?'done ':'')+(i===idx?'current':''); b.onclick=()=>{idx=i;render()}; qmap.appendChild(b);});}
+document.getElementById('nextBtn').onclick=()=>{if(idx<order.length-1){idx++;render()}else{document.getElementById('review').scrollIntoView({behavior:'smooth'})}};
+document.getElementById('prevBtn').onclick=()=>{if(idx>0){idx--;render()}};
+document.getElementById('resetBtn').onclick=()=>{answered={};streak=0;idx=0;render()};
+document.getElementById('shuffleBtn').onclick=()=>{order.sort(()=>Math.random()-.5);idx=0;render()};
+document.getElementById('showAllBtn').onclick=()=>document.getElementById('mapPanel').classList.toggle('hidden');
+render();
+</script>
+</body>
+</html>
