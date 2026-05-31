@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IQ Test Demonstration</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #385a7c;
+      --accent-dark: #243d55;
+      --border: #d8dee6;
+      --success: #2f7d4f;
+      --warning: #a65f00;
+      --danger: #9f2f2f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #edf2f7, #f9fafb);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 .5rem;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+    }
+
+    header p {
+      max-width: 850px;
+      margin: 0 auto;
+      font-size: 1.05rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .notice {
+      background: #fff8e6;
+      border: 1px solid #f2d48a;
+      border-left: 6px solid var(--warning);
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+
+    .card h2, .card h3 {
+      margin-top: 0;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: .75rem 1.1rem;
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--accent-dark);
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.secondary:hover {
+      background: #d1d5db;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .quiz-area {
+      display: none;
+    }
+
+    .progress-wrap {
+      background: #e5e7eb;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: .5rem 0 1rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .25s ease;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: .75rem;
+    }
+
+    .question-title {
+      font-size: 1.35rem;
+      margin-bottom: .5rem;
+    }
+
+    .question-type {
+      display: inline-block;
+      background: #eaf0f6;
+      color: var(--accent-dark);
+      padding: .25rem .6rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: bold;
+      margin-bottom: .75rem;
+    }
+
+    .answers {
+      display: grid;
+      gap: .75rem;
+      margin-top: 1rem;
+    }
+
+    .answer {
+      text-align: left;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      border-radius: 12px;
+      padding: .9rem 1rem;
+      font-weight: normal;
+    }
+
+    .answer:hover {
+      background: #f3f6fa;
+    }
+
+    .answer.selected {
+      border: 2px solid var(--accent);
+      background: #eaf0f6;
+      font-weight: bold;
+    }
+
+    .pattern-box {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 1.4rem;
+      margin: 1rem 0;
+    }
+
+    .shape {
+      width: 52px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #374151;
+      background: #f9fafb;
+      font-weight: bold;
+    }
+
+    .circle { border-radius: 50%; }
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 28px solid transparent;
+      border-right: 28px solid transparent;
+      border-bottom: 52px solid #374151;
+      background: transparent;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .score-number {
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: var(--accent);
+      margin: .25rem 0;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: .4rem .7rem;
+      border-radius: 999px;
+      background: #eef2f7;
+      margin: .2rem .25rem .2rem 0;
+      font-size: .9rem;
+    }
+
+    .feedback-list {
+      margin-top: 1rem;
+    }
+
+    details {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .8rem 1rem;
+      margin: .75rem 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .bar-chart {
+      margin-top: 1rem;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 170px 1fr 50px;
+      gap: .5rem;
+      align-items: center;
+      margin: .5rem 0;
+      font-size: .95rem;
+    }
+
+    .bar-bg {
+      background: #e5e7eb;
+      height: 18px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      border-radius: 999px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem 1rem;
+      font-size: .9rem;
+    }
+
+    @media (max-width: 620px) {
+      main { padding: 1rem; }
+      .bar-row { grid-template-columns: 1fr; }
+      .meta { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IQ Test Demonstration</h1>
+    <p>An interactive classroom activity showing how intelligence-test items can measure different cognitive skills, how scores are calculated, and why test results require careful interpretation.</p>
+  </header>
+
+  <main>
+    <section class="notice">
+      <strong>Important:</strong> This is not a real IQ test and does not produce a valid IQ score. It is a teaching demonstration designed to help students understand item types, scoring, time pressure, and interpretation issues in psychological testing.
+    </section>
+
+    <section id="intro" class="grid">
+      <div class="card">
+        <h2>What this demonstrates</h2>
+        <p>This activity includes sample items that resemble common cognitive-testing categories: verbal reasoning, numerical reasoning, spatial reasoning, pattern recognition, working memory, and processing speed.</p>
+        <p>After the demo, students receive a score summary and reflection prompts about reliability, validity, culture, anxiety, and the limits of testing.</p>
+      </div>
+
+      <div class="card">
+        <h2>How to use it</h2>
+        <p>Students answer 12 short questions. A timer is included to demonstrate how time limits can influence performance, but the score is based only on answers.</p>
+        <div class="button-row">
+          <button onclick="startQuiz()">Start Demonstration</button>
+          <button class="secondary" onclick="showTeacherNotes()">Teacher Notes</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="teacherNotes" class="card" style="display:none; margin-bottom: 1.25rem;">
+      <h2>Teacher Notes</h2>
+      <p>Suggested discussion questions:</p>
+      <ul>
+        <li>Which questions seemed to measure learned knowledge versus reasoning?</li>
+        <li>How might language, schooling, test anxiety, disability, or culture affect scores?</li>
+        <li>Why is one short online quiz not enough to estimate intelligence?</li>
+        <li>What would make a psychological test reliable and valid?</li>
+      </ul>
+    </section>
+
+    <section id="quiz" class="quiz-area card">
+      <div class="meta">
+        <div id="questionCounter">Question 1 of 12</div>
+        <div id="timer">Time: 00:00</div>
+      </div>
+      <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+      <div id="questionType" class="question-type"></div>
+      <h2 id="questionText" class="question-title"></h2>
+      <div id="visualArea"></div>
+      <div id="answers" class="answers"></div>
+      <div class="button-row">
+        <button class="secondary" onclick="previousQuestion()" id="backBtn">Back</button>
+        <button onclick="nextQuestion()" id="nextBtn">Next</button>
+      </div>
+    </section>
+
+    <section id="result" class="result card">
+      <h2>Demonstration Results</h2>
+      <p>Your demonstration score:</p>
+      <div id="scoreNumber" class="score-number">0 / 12</div>
+      <p id="scoreMessage"></p>
+
+      <h3>Skill-area summary</h3>
+      <div id="barChart" class="bar-chart"></div>
+
+      <h3>Interpretation Reminder</h3>
+      <p>This score is not an IQ score. Real intelligence testing requires standardized administration, norm groups, reliability evidence, validity evidence, trained interpretation, and careful attention to context.</p>
+
+      <h3>Reflection Prompts</h3>
+      <p><span class="pill">Reliability</span><span class="pill">Validity</span><span class="pill">Culture</span><span class="pill">Test anxiety</span><span class="pill">Multiple abilities</span></p>
+      <ol>
+        <li>Which type of item felt easiest for you? Which felt hardest?</li>
+        <li>Did the timer affect how you approached the task?</li>
+        <li>What outside factors could change someone’s performance on this kind of test?</li>
+        <li>What would a psychologist need before making a claim about someone’s intelligence?</li>
+      </ol>
+
+      <div id="review"></div>
+
+      <div class="button-row">
+        <button onclick="restartQuiz()">Restart Demonstration</button>
+        <button class="secondary" onclick="window.print()">Print Results</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Classroom demonstration only. Not for diagnosis, placement, or real intelligence measurement.
+  </footer>
+
+  <script>
+    const questions = [
+      {
+        type: "Verbal Reasoning",
+        text: "Which word is most similar in meaning to 'brief'?",
+        answers: ["short", "heavy", "bright", "angry"],
+        correct: 0,
+        explanation: "'Brief' means short in time or length."
+      },
+      {
+        type: "Numerical Reasoning",
+        text: "What number comes next? 3, 6, 12, 24, ___",
+        answers: ["30", "36", "48", "60"],
+        correct: 2,
+        explanation: "Each number doubles: 3, 6, 12, 24, 48."
+      },
+      {
+        type: "Pattern Recognition",
+        text: "What comes next in the sequence?",
+        visual: "● ■ ● ■ ● ___",
+        answers: ["●", "■", "▲", "◆"],
+        correct: 1,
+        explanation: "The pattern alternates circle, square, circle, square."
+      },
+      {
+        type: "Spatial Reasoning",
+        text: "If you rotate the letter N 180 degrees, what does it look most like?",
+        answers: ["N", "Z", "M", "W"],
+        correct: 0,
+        explanation: "A capital N still resembles N after a 180-degree rotation."
+      },
+      {
+        type: "Working Memory",
+        text: "Remember this sequence: 7 - 2 - 9 - 4. What is it in reverse order?",
+        answers: ["4 - 9 - 2 - 7", "7 - 2 - 9 - 4", "9 - 4 - 7 - 2", "2 - 7 - 4 - 9"],
+        correct: 0,
+        explanation: "The reverse of 7 - 2 - 9 - 4 is 4 - 9 - 2 - 7."
+      },
+      {
+        type: "Verbal Reasoning",
+        text: "Book is to reading as fork is to ____.",
+        answers: ["drawing", "eating", "sleeping", "driving"],
+        correct: 1,
+        explanation: "A book is commonly used for reading; a fork is commonly used for eating."
+      },
+      {
+        type: "Numerical Reasoning",
+        text: "If all zips are zaps, and all zaps are zops, then all zips are definitely ____.",
+        answers: ["zops", "not zaps", "unknown", "zips only"],
+        correct: 0,
+        explanation: "This is a syllogism: if zips are inside zaps, and zaps are inside zops, then zips are inside zops."
+      },
+      {
+        type: "Processing Speed",
+        text: "Which pair is exactly the same?",
+        answers: ["B7Q9 / B7O9", "M4K2 / M4K2", "X1V8 / X1Y8", "L6S3 / L6B3"],
+        correct: 1,
+        explanation: "Only M4K2 / M4K2 is an exact match."
+      },
+      {
+        type: "Pattern Recognition",
+        text: "What number is missing? 2, 5, 8, 11, ___",
+        answers: ["12", "13", "14", "16"],
+        correct: 2,
+        explanation: "The pattern adds 3 each time: 2, 5, 8, 11, 14."
+      },
+      {
+        type: "Spatial Reasoning",
+        text: "Which shape has the most sides?",
+        answers: ["triangle", "square", "pentagon", "hexagon"],
+        correct: 3,
+        explanation: "A hexagon has 6 sides, more than the others listed."
+      },
+      {
+        type: "Verbal Reasoning",
+        text: "Choose the odd one out.",
+        answers: ["apple", "banana", "carrot", "grape"],
+        correct: 2,
+        explanation: "Carrot is typically categorized as a vegetable; the others are fruits."
+      },
+      {
+        type: "Numerical Reasoning",
+        text: "If 4 pencils cost $2, how much would 10 pencils cost at the same rate?",
+        answers: ["$3", "$4", "$5", "$8"],
+        correct: 2,
+        explanation: "Each pencil costs $0.50, so 10 pencils cost $5."
+      }
+    ];
+
+    let current = 0;
+    let selectedAnswers = new Array(questions.length).fill(null);
+    let seconds = 0;
+    let timerInterval = null;
+
+    function startQuiz() {
+      document.getElementById('intro').style.display = 'none';
+      document.getElementById('teacherNotes').style.display = 'none';
+      document.getElementById('quiz').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      seconds = 0;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      renderQuestion();
+    }
+
+    function showTeacherNotes() {
+      const notes = document.getElementById('teacherNotes');
+      notes.style.display = notes.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function updateTimer() {
+      seconds++;
+      const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const sec = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = `Time: ${min}:${sec}`;
+    }
+
+    function renderQuestion() {
+      const q = questions[current];
+      document.getElementById('questionCounter').textContent = `Question ${current + 1} of ${questions.length}`;
+      document.getElementById('progressBar').style.width = `${((current + 1) / questions.length) * 100}%`;
+      document.getElementById('questionType').textContent = q.type;
+      document.getElementById('questionText').textContent = q.text;
+
+      const visualArea = document.getElementById('visualArea');
+      visualArea.innerHTML = '';
+      if (q.visual) {
+        const box = document.createElement('div');
+        box.className = 'pattern-box';
+        box.textContent = q.visual;
+        visualArea.appendChild(box);
+      }
+
+      const answers = document.getElementById('answers');
+      answers.innerHTML = '';
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer';
+        if (selectedAnswers[current] === index) btn.classList.add('selected');
+        btn.textContent = answer;
+        btn.onclick = () => selectAnswer(index);
+        answers.appendChild(btn);
+      });
+
+      document.getElementById('backBtn').disabled = current === 0;
+      document.getElementById('nextBtn').textContent = current === questions.length - 1 ? 'Finish' : 'Next';
+    }
+
+    function selectAnswer(index) {
+      selectedAnswers[current] = index;
+      renderQuestion();
+    }
+
+    function nextQuestion() {
+      if (current < questions.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function previousQuestion() {
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    }
+
+    function showResults() {
+      clearInterval(timerInterval);
+      document.getElementById('quiz').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+
+      let score = 0;
+      const categories = {};
+
+      questions.forEach((q, i) => {
+        if (!categories[q.type]) categories[q.type] = { correct: 0, total: 0 };
+        categories[q.type].total++;
+        if (selectedAnswers[i] === q.correct) {
+          score++;
+          categories[q.type].correct++;
+        }
+      });
+
+      document.getElementById('scoreNumber').textContent = `${score} / ${questions.length}`;
+
+      let message = '';
+      if (score >= 10) message = 'Strong performance on this demonstration. Remember that this is not a real IQ score.';
+      else if (score >= 7) message = 'Moderate performance on this demonstration. Think about which item types helped or hurt your score.';
+      else message = 'Lower performance on this demonstration. Consider how item type, timing, attention, and prior knowledge may affect results.';
+      document.getElementById('scoreMessage').textContent = message;
+
+      renderBars(categories);
+      renderReview();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderBars(categories) {
+      const chart = document.getElementById('barChart');
+      chart.innerHTML = '';
+      Object.keys(categories).forEach(type => {
+        const item = categories[type];
+        const percent = Math.round((item.correct / item.total) * 100);
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = `
+          <div>${type}</div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${percent}%"></div></div>
+          <div>${item.correct}/${item.total}</div>
+        `;
+        chart.appendChild(row);
+      });
+    }
+
+    function renderReview() {
+      const review = document.getElementById('review');
+      review.innerHTML = '<h3>Answer Review</h3>';
+
+      questions.forEach((q, i) => {
+        const chosen = selectedAnswers[i];
+        const correct = chosen === q.correct;
+        const detail = document.createElement('details');
+        detail.innerHTML = `
+          <summary>Question ${i + 1}: ${correct ? 'Correct' : 'Incorrect or unanswered'}</summary>
+          <p><strong>Item type:</strong> ${q.type}</p>
+          <p><strong>Question:</strong> ${q.text}</p>
+          <p><strong>Your answer:</strong> ${chosen === null ? 'No answer' : q.answers[chosen]}</p>
+          <p><strong>Correct answer:</strong> ${q.answers[q.correct]}</p>
+          <p>${q.explanation}</p>
+        `;
+        review.appendChild(detail);
+      });
+    }
+
+    function restartQuiz() {
+      current = 0;
+      selectedAnswers = new Array(questions.length).fill(null);
+      document.getElementById('result').style.display = 'none';
+      startQuiz();
+    }
+  </script>
+</body>
+</html>
